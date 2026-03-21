@@ -1,0 +1,34 @@
+const mongoose = require('mongoose');
+
+const expenseSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    amount: {
+        type: Number,
+        required: [true, 'Please add an amount'],
+    },
+    category: {
+        type: String,
+        required: [true, 'Please select a category'],
+        enum: ['Food', 'Travel', 'Shopping', 'Bills', 'Other'],
+    },
+    date: {
+        type: Date,
+        required: [true, 'Please add a date'],
+        default: Date.now,
+    },
+    paymentMethod: {
+        type: String,
+        required: [true, 'Please select a payment method'],
+        enum: ['Cash', 'Card', 'UPI'],
+    },
+    note: {
+        type: String,
+        maxlength: [200, 'Note cannot be more than 200 characters'],
+    },
+}, { timestamps: true });
+
+module.exports = mongoose.model('Expense', expenseSchema);
