@@ -18,6 +18,19 @@ exports.getExpenses = async (req, res) => {
 exports.addExpense = async (req, res) => {
     try {
         req.body.userId = req.user.id;
+        
+        if (req.body.isRecurring && req.body.recurringInterval) {
+            const date = new Date(req.body.date || Date.now());
+            if (req.body.recurringInterval === 'daily') {
+                date.setDate(date.getDate() + 1);
+            } else if (req.body.recurringInterval === 'weekly') {
+                date.setDate(date.getDate() + 7);
+            } else if (req.body.recurringInterval === 'monthly') {
+                date.setMonth(date.getMonth() + 1);
+            }
+            req.body.nextRecurringDate = date;
+        }
+
         const expense = await Expense.create(req.body);
         res.status(201).json({ success: true, data: expense });
     } catch (error) {

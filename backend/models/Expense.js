@@ -29,6 +29,19 @@ const expenseSchema = new mongoose.Schema({
         type: String,
         maxlength: [200, 'Note cannot be more than 200 characters'],
     },
+    isRecurring: {
+        type: Boolean,
+        default: false
+    },
+    recurringInterval: {
+        type: String,
+        enum: ['daily', 'weekly', 'monthly', null],
+        default: null
+    },
+    nextRecurringDate: {
+        type: Date,
+        default: null
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Expense', expenseSchema);

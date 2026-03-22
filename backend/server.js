@@ -6,6 +6,8 @@ const dotenv = require('dotenv');
 // Load env vars
 dotenv.config();
 
+const startRecurringJob = require('./cron/recurringJob');
+
 const app = express();
 
 // Middleware
@@ -39,5 +41,6 @@ const connectDB = async () => {
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
+        startRecurringJob();
     });
 });

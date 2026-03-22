@@ -13,11 +13,14 @@ const ExpenseForm = ({ onClose }) => {
         category: CATEGORIES[0],
         date: new Date().toISOString().split('T')[0],
         paymentMethod: PAYMENT_METHODS[0],
-        note: ''
+        note: '',
+        isRecurring: false,
+        recurringInterval: 'monthly'
     });
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value, type, checked } = e.target;
+        setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
     };
 
     const handleSubmit = async (e) => {
@@ -87,6 +90,35 @@ const ExpenseForm = ({ onClose }) => {
                         {PAYMENT_METHODS.map(method => <option key={method} value={method}>{method}</option>)}
                     </select>
                 </div>
+            </div>
+
+            <div className="flex gap-4 mb-4 items-center">
+                <div className="form-group flex items-center gap-2" style={{ marginBottom: 0 }}>
+                    <input
+                        type="checkbox"
+                        name="isRecurring"
+                        id="isRecurring"
+                        checked={formData.isRecurring}
+                        onChange={handleChange}
+                        style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--primary)' }}
+                    />
+                    <label htmlFor="isRecurring" style={{ cursor: 'pointer', margin: 0, fontWeight: 500 }} className="text-muted">Set as Recurring</label>
+                </div>
+                {formData.isRecurring && (
+                    <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
+                        <select
+                            name="recurringInterval"
+                            className="form-control"
+                            value={formData.recurringInterval}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                )}
             </div>
 
             <div className="form-group">
