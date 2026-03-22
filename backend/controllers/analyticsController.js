@@ -32,17 +32,24 @@ exports.getDashboardData = async (req, res) => {
                 note: t.note || ''
             }));
 
-        // Prepare chart data: Monthly expenses
-        const monthlyExpenses = {};
-        expenses.forEach(expense => {
-            const month = new Date(expense.date).toLocaleString('default', { month: 'short', year: 'numeric' });
-            monthlyExpenses[month] = (monthlyExpenses[month] || 0) + expense.amount;
+        // Prepare chart data: Net Flow (Income vs Expense)
+        const monthlyDataMap = {};
+
+        // Aggregate incomes
+        incomes.forEach(inc => {
+            const month = new Date(inc.date).toLocaleString('default', { month: 'short', year: 'numeric' });
+            if (!monthlyDataMap[month]) monthlyDataMap[month] = { month, income: 0, expense: 0 };
+            monthlyDataMap[month].income += inc.amount;
         });
 
-        const monthlyExpenseChart = Object.keys(monthlyExpenses).map(month => ({
-            month,
-            amount: monthlyExpenses[month]
-        }));
+        // Aggregate expenses
+        expenses.forEach(exp => {
+            const month = new Date(exp.date).toLocaleString('default', { month: 'short', year: 'numeric' });
+            if (!monthlyDataMap[month]) monthlyDataMap[month] = { month, income: 0, expense: 0 };
+            monthlyDataMap[month].expense += exp.amount;
+        });
+
+        const netFlowChart = Object.values(monthlyDataMap).sort((a, b) => new Date(a.month) - new Date(b.month));
 
         // Prepare chart data: Category-wise expenses
         const categoryExpenses = {};
@@ -61,6 +68,12 @@ exports.getDashboardData = async (req, res) => {
             const d = new Date(e.date);
             return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
         });
+        
+        const currentMonthIncomes = incomes.filter(i => {
+            const d = new Date(i.date);
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
+
         const lastMonthExpenses = expenses.filter(e => {
             const d = new Date(e.date);
             return d.getMonth() === (now.getMonth() === 0 ? 11 : now.getMonth() - 1) &&
@@ -68,6 +81,9 @@ exports.getDashboardData = async (req, res) => {
         });
 
         const currentMonthTotal = currentMonthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+        const currentMonthIncome = currentMonthIncomes.reduce((acc, curr) => acc + curr.amount, 0);
+        const currentMonthSavings = currentMonthIncome - currentMonthTotal;
+        
         const lastMonthTotal = lastMonthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
 
         let expenseIncrease = lastMonthTotal > 0 ? ((currentMonthTotal - lastMonthTotal) / lastMonthTotal) * 100 : 0;
@@ -77,6 +93,17 @@ exports.getDashboardData = async (req, res) => {
             : 'None';
 
         const dailyAverageSpending = currentMonthTotal / (now.getDate() || 1);
+
+        const topExpensesThisMonth = [...currentMonthExpenses]
+            .sort((a, b) => b.amount - a.amount)
+            .slice(0, 5)
+            .map(t => ({
+                id: t._id,
+                amount: t.amount,
+                category: t.category,
+                date: t.date,
+                note: t.note || ''
+            }));
 
         const currentMonthCategoryExpenses = {};
         currentMonthExpenses.forEach(expense => {
@@ -117,13 +144,15 @@ exports.getDashboardData = async (req, res) => {
                 totalExpenses,
                 currentBalance,
                 recentTransactions,
-                monthlyExpenseChart,
+                netFlowChart,
                 categoryChart,
                 expenseIncrease,
                 highestSpendingCategory,
                 dailyAverageSpending,
                 currentMonthCategoryExpenses,
                 currentMonthTotal,
+                currentMonthSavings,
+                topExpensesThisMonth,
                 budget,
                 alerts
             }

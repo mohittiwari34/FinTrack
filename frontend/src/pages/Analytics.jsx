@@ -1,7 +1,7 @@
 import { useContext, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import { Activity } from 'lucide-react';
-import { ExpenseBarChart, CategoryPieChart } from '../components/DashboardCharts';
+import { NetFlowChart, CategoryPieChart } from '../components/DashboardCharts';
 
 const Analytics = () => {
     const { dashboardData, loading, fetchDashboardData } = useContext(AppContext);
@@ -18,7 +18,7 @@ const Analytics = () => {
         );
     }
 
-    const { monthlyExpenseChart, categoryChart } = dashboardData;
+    const { netFlowChart, categoryChart } = dashboardData;
 
     return (
         <div className="animate-fade-up">
@@ -31,8 +31,8 @@ const Analytics = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
                 <div className="card">
-                    <h3 className="mb-4 flex items-center gap-2 text-muted"><Activity size={18} /> Monthly Expenses Overview</h3>
-                    <ExpenseBarChart data={monthlyExpenseChart} />
+                    <h3 className="mb-4 flex items-center gap-2 text-muted"><Activity size={18} /> Net Flow (Income vs Expense)</h3>
+                    <NetFlowChart data={netFlowChart} />
                 </div>
                 <div className="card">
                     <h3 className="mb-4 text-muted">Expenses by Category</h3>
