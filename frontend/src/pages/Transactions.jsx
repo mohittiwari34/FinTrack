@@ -1,0 +1,62 @@
+import { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../context/AppContext';
+import Modal from '../components/Modal';
+import ExpenseForm from '../components/ExpenseForm';
+import IncomeForm from '../components/IncomeForm';
+import ExpenseList from '../components/ExpenseList';
+
+const Transactions = () => {
+    const { fetchDashboardData } = useContext(AppContext);
+    const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+    const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
+
+    useEffect(() => {
+        // Just fetch fresh data when trans page loads
+        fetchDashboardData();
+    }, [fetchDashboardData]);
+
+    const handleExpenseAdded = () => {
+        setIsExpenseModalOpen(false);
+        fetchDashboardData();
+    };
+
+    const handleIncomeAdded = () => {
+        setIsIncomeModalOpen(false);
+        fetchDashboardData();
+    };
+
+    return (
+        <div className="animate-fade-up">
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h1 style={{ fontSize: '1.875rem', marginBottom: '0.25rem' }}>Transactions</h1>
+                    <p className="text-muted">Manage all your incomes and expenses</p>
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={() => setIsExpenseModalOpen(true)} className="btn btn-primary" style={{ padding: '0.5rem 1rem' }}>+ Add Expense</button>
+                    <button onClick={() => setIsIncomeModalOpen(true)} className="btn" style={{ padding: '0.5rem 1rem', border: '1px solid var(--border)', background: 'var(--surface)' }}>+ Add Income</button>
+                </div>
+            </div>
+
+            <ExpenseList />
+
+            <Modal
+                isOpen={isExpenseModalOpen}
+                onClose={() => setIsExpenseModalOpen(false)}
+                title="Add New Expense"
+            >
+                <ExpenseForm onClose={handleExpenseAdded} />
+            </Modal>
+
+            <Modal
+                isOpen={isIncomeModalOpen}
+                onClose={() => setIsIncomeModalOpen(false)}
+                title="Add New Income"
+            >
+                <IncomeForm onClose={handleIncomeAdded} />
+            </Modal>
+        </div>
+    );
+};
+
+export default Transactions;

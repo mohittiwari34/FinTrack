@@ -10,13 +10,19 @@ const Navbar = () => {
 
     return (
         <nav style={{
-            backgroundColor: 'var(--surface)',
-            borderBottom: '1px solid var(--border)',
-            padding: '1rem 2rem',
+            background: 'var(--surface)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid var(--border)',
+            padding: '0.75rem 2rem',
             position: 'sticky',
-            top: 0,
+            top: '1rem',
             zIndex: 50,
-            boxShadow: 'var(--shadow)'
+            boxShadow: 'var(--shadow)',
+            borderRadius: 'var(--radius-lg)',
+            width: '95%',
+            maxWidth: '1200px',
+            margin: '1rem auto'
         }}>
             <div className="main-content" style={{ padding: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 
@@ -24,6 +30,13 @@ const Navbar = () => {
                     <Wallet size={24} />
                     <span>FinTrack</span>
                 </Link>
+
+                <div className="flex gap-4 items-center" style={{ fontWeight: 500 }}>
+                    <Link to="/" className="nav-link">Dashboard</Link>
+                    <Link to="/transactions" className="nav-link">Transactions</Link>
+                    <Link to="/budgets" className="nav-link">Budgets</Link>
+                    <Link to="/analytics" className="nav-link">Analytics</Link>
+                </div>
 
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 badge">

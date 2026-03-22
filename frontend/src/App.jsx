@@ -7,6 +7,9 @@ import { AppProvider } from './context/AppContext';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Transactions from './pages/Transactions';
+import Budgets from './pages/Budgets';
+import Analytics from './pages/Analytics';
 import Navbar from './components/Navbar';
 
 const PrivateRoute = ({ children }) => {
@@ -30,11 +33,19 @@ const AppRoutes = () => {
                         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
                         <Route
                             path="/"
-                            element={
-                                <PrivateRoute>
-                                    <Dashboard />
-                                </PrivateRoute>
-                            }
+                            element={<PrivateRoute><Dashboard /></PrivateRoute>}
+                        />
+                        <Route
+                            path="/transactions"
+                            element={<PrivateRoute><Transactions /></PrivateRoute>}
+                        />
+                        <Route
+                            path="/budgets"
+                            element={<PrivateRoute><Budgets /></PrivateRoute>}
+                        />
+                        <Route
+                            path="/analytics"
+                            element={<PrivateRoute><Analytics /></PrivateRoute>}
                         />
                     </Routes>
                 </main>
