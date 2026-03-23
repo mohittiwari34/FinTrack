@@ -157,11 +157,7 @@ const ExpenseList = () => {
                                 <label className="form-label" style={{ fontSize: '0.75rem' }}>Category</label>
                                 <select className="form-control" style={{ padding: '0.5rem' }} value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                                     <option value="All">All Categories</option>
-                                    <option value="Food">Food</option>
-                                    <option value="Travel">Travel</option>
-                                    <option value="Shopping">Shopping</option>
-                                    <option value="Bills">Bills</option>
-                                    <option value="Other">Other</option>
+                                    {['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Education', 'Health', 'Drinks', 'Other'].map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
                         )}
@@ -269,7 +265,7 @@ const ExpenseList = () => {
                                     value={editingExpense.category}
                                     onChange={(e) => setEditingExpense({ ...editingExpense, category: e.target.value })}
                                 >
-                                    {['Food', 'Travel', 'Shopping', 'Bills', 'Other'].map(c => <option key={c} value={c}>{c}</option>)}
+                                    {['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Education', 'Health', 'Drinks', 'Other'].map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
                             <div className="form-group w-full">

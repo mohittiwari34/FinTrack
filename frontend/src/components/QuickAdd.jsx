@@ -58,10 +58,14 @@ const QuickAdd = () => {
 
             const lowerText = text.toLowerCase();
             let category = 'Other';
-            if (lowerText.includes('food') || lowerText.includes('burger') || lowerText.includes('lunch') || lowerText.includes('pizza')) category = 'Food';
-            else if (lowerText.includes('travel') || lowerText.includes('taxi') || lowerText.includes('uber') || lowerText.includes('bus')) category = 'Travel';
-            else if (lowerText.includes('shop') || lowerText.includes('grocer') || lowerText.includes('buy')) category = 'Shopping';
-            else if (lowerText.includes('bill') || lowerText.includes('pay') || lowerText.includes('rent')) category = 'Bills';
+            if (lowerText.match(/food|burger|lunch|pizza|dinner|breakfast|meal|snack/)) category = 'Food';
+            else if (lowerText.match(/drink|tea|coffee|juice|beverage|water|soda/)) category = 'Drinks';
+            else if (lowerText.match(/movie|cinema|theatre|netflix|entertainment|show/)) category = 'Entertainment';
+            else if (lowerText.match(/study|book|course|tuition|education|school|college|pen/)) category = 'Education';
+            else if (lowerText.match(/health|doctor|medicine|pharmacy|hospital|clinic/)) category = 'Health';
+            else if (lowerText.match(/travel|taxi|uber|bus|train|flight|auto|cab/)) category = 'Travel';
+            else if (lowerText.match(/shop|grocer|buy|clothes|mall|supermarket/)) category = 'Shopping';
+            else if (lowerText.match(/bill|pay|rent|electricity|wifi|internet|recharge/)) category = 'Bills';
 
             const note = text.replace(amountMatch[0], '').trim() || 'Quick add';
 

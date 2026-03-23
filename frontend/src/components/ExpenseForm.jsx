@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { AppContext } from '../context/AppContext';
 
-const CATEGORIES = ['Food', 'Travel', 'Shopping', 'Bills', 'Other'];
+const CATEGORIES = ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Education', 'Health', 'Drinks', 'Other'];
 const PAYMENT_METHODS = ['Cash', 'Card', 'UPI'];
 
 const ExpenseForm = ({ onClose }) => {
