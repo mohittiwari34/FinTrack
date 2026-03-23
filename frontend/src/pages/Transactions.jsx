@@ -4,6 +4,7 @@ import Modal from '../components/Modal';
 import ExpenseForm from '../components/ExpenseForm';
 import IncomeForm from '../components/IncomeForm';
 import ExpenseList from '../components/ExpenseList';
+import QuickAdd from '../components/QuickAdd';
 
 const Transactions = () => {
     const { fetchDashboardData } = useContext(AppContext);
@@ -37,6 +38,8 @@ const Transactions = () => {
                     <button onClick={() => setIsIncomeModalOpen(true)} className="btn" style={{ padding: '0.5rem 1rem', border: '1px solid var(--border)', background: 'var(--surface)' }}>+ Add Income</button>
                 </div>
             </div>
+
+            <QuickAdd />
 
             <ExpenseList />
 
