@@ -1,10 +1,11 @@
-import { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../store/slices/authSlice';
 import { Wallet, LogOut, User } from 'lucide-react';
 
 const Navbar = () => {
-    const { user, logout } = useContext(AuthContext);
+    const { user } = useSelector(state => state.auth);
+    const dispatch = useDispatch();
 
     if (!user) return null;
 
@@ -45,7 +46,7 @@ const Navbar = () => {
                     </div>
 
                     <button
-                        onClick={logout}
+                        onClick={() => dispatch(logout())}
                         className="btn btn-ghost flex items-center gap-2"
                         style={{ padding: '0.5rem 1rem' }}
                     >

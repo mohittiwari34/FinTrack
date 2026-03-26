@@ -1,22 +1,19 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, clearError } from '../store/slices/authSlice';
 import { Wallet, LogIn } from 'lucide-react';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login, error, setError, loading } = useContext(AuthContext);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const dispatch = useDispatch();
+    const { error, actionLoading: isSubmitting } = useSelector(state => state.auth);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsSubmitting(true);
-        await login(email, password);
-        setIsSubmitting(false);
+        dispatch(login({ email, password }));
     };
-
-    if (loading) return null;
 
     return (
         <div className="auth-container">
@@ -32,7 +29,7 @@ const Login = () => {
                 {error && (
                     <div className="badge badge-expense mb-4 w-full" style={{ padding: '0.75rem', textAlign: 'center' }}>
                         {error}
-                        <button onClick={() => setError(null)} style={{ float: 'right', color: 'inherit' }}>&times;</button>
+                        <button onClick={() => dispatch(clearError())} style={{ float: 'right', color: 'inherit' }}>&times;</button>
                     </div>
                 )}
 

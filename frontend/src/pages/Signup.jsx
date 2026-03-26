@@ -1,6 +1,7 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { register, clearError } from '../store/slices/authSlice';
 import { Wallet, UserPlus } from 'lucide-react';
 
 const Signup = () => {
@@ -8,26 +9,21 @@ const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const { register, error, setError, loading } = useContext(AuthContext);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const dispatch = useDispatch();
+    const { error, actionLoading: isSubmitting } = useSelector(state => state.auth);
     const [localError, setLocalError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLocalError('');
-        setError(null);
+        dispatch(clearError());
 
         if (password !== confirmPassword) {
             setLocalError('Passwords do not match');
             return;
         }
-
-        setIsSubmitting(true);
-        await register(name, email, password);
-        setIsSubmitting(false);
+        dispatch(register({ name, email, password }));
     };
-
-    if (loading) return null;
 
     return (
         <div className="auth-container">
@@ -43,7 +39,7 @@ const Signup = () => {
                 {(error || localError) && (
                     <div className="badge badge-expense mb-4 w-full" style={{ padding: '0.75rem', textAlign: 'center' }}>
                         {error || localError}
-                        <button onClick={() => { setError(null); setLocalError(''); }} style={{ float: 'right', color: 'inherit' }}>&times;</button>
+                        <button type="button" onClick={() => { dispatch(clearError()); setLocalError(''); }} style={{ float: 'right', color: 'inherit' }}>&times;</button>
                     </div>
                 )}
 

@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useContext } from 'react';
-import { AuthProvider, AuthContext } from './context/AuthContext';
-import { AppProvider } from './context/AppContext';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { checkLoggedIn } from './store/slices/authSlice';
+import { fetchDashboardData, fetchExpenses, fetchIncomes } from './store/slices/appSlice';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -13,7 +14,7 @@ import Analytics from './pages/Analytics';
 import Navbar from './components/Navbar';
 
 const PrivateRoute = ({ children }) => {
-    const { user, loading } = useContext(AuthContext);
+    const { user, loading } = useSelector(state => state.auth);
 
     if (loading) return <div className="loader" style={{ margin: '50px auto' }}></div>;
 
@@ -21,7 +22,16 @@ const PrivateRoute = ({ children }) => {
 };
 
 const AppRoutes = () => {
-    const { user } = useContext(AuthContext);
+    const { user } = useSelector(state => state.auth);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        if (user) {
+            dispatch(fetchDashboardData());
+            dispatch(fetchExpenses());
+            dispatch(fetchIncomes());
+        }
+    }, [user, dispatch]);
 
     return (
         <Router>
@@ -55,13 +65,13 @@ const AppRoutes = () => {
 };
 
 function App() {
-    return (
-        <AuthProvider>
-            <AppProvider>
-                <AppRoutes />
-            </AppProvider>
-        </AuthProvider>
-    );
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(checkLoggedIn());
+    }, [dispatch]);
+
+    return <AppRoutes />;
 }
 
 export default App;

@@ -1,8 +1,10 @@
-import { useState, useContext } from 'react';
-import { AppContext } from '../context/AppContext';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { addIncome, clearAppError } from '../store/slices/appSlice';
 
 const IncomeForm = ({ onClose }) => {
-    const { addIncome, error, setError } = useContext(AppContext);
+    const dispatch = useDispatch();
+    const { error } = useSelector(state => state.app);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -25,10 +27,10 @@ const IncomeForm = ({ onClose }) => {
             amount: Number(formData.amount)
         };
 
-        const success = await addIncome(submitData);
-        if (success) {
+        try {
+            await dispatch(addIncome(submitData)).unwrap();
             onClose();
-        }
+        } catch (err) {}
         setIsSubmitting(false);
     };
 
@@ -37,7 +39,7 @@ const IncomeForm = ({ onClose }) => {
             {error && (
                 <div className="badge badge-expense mb-4 w-full" style={{ padding: '0.5rem', textAlign: 'center' }}>
                     {error}
-                    <button type="button" onClick={() => setError(null)} style={{ float: 'right', color: 'inherit' }}>&times;</button>
+                    <button type="button" onClick={() => dispatch(clearAppError())} style={{ float: 'right', color: 'inherit' }}>&times;</button>
                 </div>
             )}
 

@@ -1,18 +1,18 @@
-import { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../context/AppContext';
-import { AuthContext } from '../context/AuthContext';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchDashboardData } from '../store/slices/appSlice';
 import BudgetProgress from '../components/BudgetProgress';
 import BudgetSettingsModal from '../components/BudgetSettingsModal';
 import Modal from '../components/Modal';
 
 const Budgets = () => {
-    const { dashboardData, loading, fetchDashboardData } = useContext(AppContext);
-    const { user } = useContext(AuthContext);
+    const dispatch = useDispatch();
+    const { dashboardData, loading } = useSelector(state => state.app);
     const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
 
     useEffect(() => {
-        fetchDashboardData();
-    }, [fetchDashboardData]);
+        dispatch(fetchDashboardData());
+    }, [dispatch]);
 
     if (loading || !dashboardData) {
         return (
@@ -26,7 +26,7 @@ const Budgets = () => {
 
     const handleBudgetSaved = () => {
         setIsBudgetModalOpen(false);
-        fetchDashboardData();
+        dispatch(fetchDashboardData());
     };
 
     return (

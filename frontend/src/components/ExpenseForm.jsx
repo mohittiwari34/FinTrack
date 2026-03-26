@@ -1,12 +1,15 @@
-import { useState, useContext } from 'react';
-import { AppContext } from '../context/AppContext';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { addExpense, clearAppError } from '../store/slices/appSlice';
 
 const CATEGORIES = ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Education', 'Health', 'Drinks', 'Other'];
 const PAYMENT_METHODS = ['Cash', 'Card', 'UPI'];
 
 const ExpenseForm = ({ onClose }) => {
-    const { addExpense, error, setError } = useContext(AppContext);
+    const dispatch = useDispatch();
+    const { error } = useSelector(state => state.app);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [receipt, setReceipt] = useState(null);
 
     const [formData, setFormData] = useState({
         amount: '',
@@ -27,15 +30,31 @@ const ExpenseForm = ({ onClose }) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Ensure amount is a number
         const submitData = {
             ...formData,
             amount: Number(formData.amount)
         };
 
-        const success = await addExpense(submitData);
-        if (success) {
+        let payload;
+        if (receipt) {
+            payload = new FormData();
+            for (const key in submitData) {
+                if (key === 'isRecurring') {
+                    if (submitData[key]) payload.append(key, "true");
+                } else if (submitData[key] !== null && submitData[key] !== undefined) {
+                    payload.append(key, submitData[key]);
+                }
+            }
+            payload.append('receipt', receipt);
+        } else {
+            payload = submitData;
+        }
+
+        try {
+            await dispatch(addExpense(payload)).unwrap();
             onClose();
+        } catch (err) {
+            // Let the global state display error
         }
         setIsSubmitting(false);
     };
@@ -45,7 +64,7 @@ const ExpenseForm = ({ onClose }) => {
             {error && (
                 <div className="badge badge-expense mb-4 w-full" style={{ padding: '0.5rem', textAlign: 'center' }}>
                     {error}
-                    <button type="button" onClick={() => setError(null)} style={{ float: 'right', color: 'inherit' }}>&times;</button>
+                    <button type="button" onClick={() => dispatch(clearAppError())} style={{ float: 'right', color: 'inherit' }}>&times;</button>
                 </div>
             )}
 
@@ -133,7 +152,7 @@ const ExpenseForm = ({ onClose }) => {
                 />
             </div>
 
-            <div className="form-group mb-6">
+            <div className="form-group">
                 <label className="form-label">Notes (Optional)</label>
                 <textarea
                     name="note"
@@ -144,6 +163,18 @@ const ExpenseForm = ({ onClose }) => {
                     rows="3"
                     maxLength="200"
                 ></textarea>
+            </div>
+
+            <div className="form-group mb-6">
+                <label className="form-label">Attach Receipt Image (Optional)</label>
+                <input
+                    type="file"
+                    className="form-control"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={(e) => setReceipt(e.target.files[0])}
+                    style={{ padding: '0.5rem', cursor: 'pointer' }}
+                />
+                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>JPG, PNG or PDF formats supported.</p>
             </div>
 
             <div className="flex justify-between gap-4">

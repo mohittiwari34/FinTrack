@@ -25,6 +25,10 @@ const expenseSchema = new mongoose.Schema({
         required: [true, 'Please select a payment method'],
         enum: ['Cash', 'Card', 'UPI'],
     },
+    receiptUrl: {
+        type: String,
+        default: null
+    },
     note: {
         type: String,
         maxlength: [200, 'Note cannot be more than 200 characters'],

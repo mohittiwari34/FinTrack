@@ -1,5 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../context/AppContext';
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { fetchDashboardData } from '../store/slices/appSlice';
 import Modal from '../components/Modal';
 import ExpenseForm from '../components/ExpenseForm';
 import IncomeForm from '../components/IncomeForm';
@@ -7,23 +8,23 @@ import ExpenseList from '../components/ExpenseList';
 import QuickAdd from '../components/QuickAdd';
 
 const Transactions = () => {
-    const { fetchDashboardData } = useContext(AppContext);
+    const dispatch = useDispatch();
     const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
     const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
 
     useEffect(() => {
         // Just fetch fresh data when trans page loads
-        fetchDashboardData();
-    }, [fetchDashboardData]);
+        dispatch(fetchDashboardData());
+    }, [dispatch]);
 
     const handleExpenseAdded = () => {
         setIsExpenseModalOpen(false);
-        fetchDashboardData();
+        dispatch(fetchDashboardData());
     };
 
     const handleIncomeAdded = () => {
         setIsIncomeModalOpen(false);
-        fetchDashboardData();
+        dispatch(fetchDashboardData());
     };
 
     return (

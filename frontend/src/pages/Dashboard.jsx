@@ -1,17 +1,18 @@
-import { useContext, useEffect } from 'react';
-import { AppContext } from '../context/AppContext';
-import { AuthContext } from '../context/AuthContext';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchDashboardData } from '../store/slices/appSlice';
 import { ArrowUpRight, ArrowDownRight, Wallet, TrendingUp, Calendar, PiggyBank, Activity } from 'lucide-react';
 import SummaryCard from '../components/SummaryCard';
 import { NetFlowChart } from '../components/DashboardCharts';
 
 const Dashboard = () => {
-    const { dashboardData, loading, fetchDashboardData } = useContext(AppContext);
-    const { user } = useContext(AuthContext);
+    const dispatch = useDispatch();
+    const { dashboardData, loading } = useSelector(state => state.app);
+    const { user } = useSelector(state => state.auth);
 
     useEffect(() => {
-        fetchDashboardData();
-    }, [fetchDashboardData]);
+        dispatch(fetchDashboardData());
+    }, [dispatch]);
 
     if (loading || !dashboardData) {
         return (

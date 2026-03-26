@@ -19,6 +19,10 @@ exports.addExpense = async (req, res) => {
     try {
         req.body.userId = req.user.id;
         
+        if (req.file) {
+            req.body.receiptUrl = `/uploads/${req.file.filename}`;
+        }
+        
         if (req.body.isRecurring && req.body.recurringInterval) {
             const date = new Date(req.body.date || Date.now());
             if (req.body.recurringInterval === 'daily') {

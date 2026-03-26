@@ -1,9 +1,10 @@
-import { useState, useContext } from 'react';
-import { AppContext } from '../context/AppContext';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addExpense } from '../store/slices/appSlice';
 import { Zap, Mic, MicOff } from 'lucide-react';
 
 const QuickAdd = () => {
-    const { addExpense } = useContext(AppContext);
+    const dispatch = useDispatch();
     const [quickText, setQuickText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isListening, setIsListening] = useState(false);
@@ -69,13 +70,15 @@ const QuickAdd = () => {
 
             const note = text.replace(amountMatch[0], '').trim() || 'Quick add';
 
-            await addExpense({
-                amount,
-                category,
-                paymentMethod: 'Cash', // Default assumed for quick add
-                note,
-                date: new Date().toISOString()
-            });
+            try {
+                await dispatch(addExpense({
+                    amount,
+                    category,
+                    paymentMethod: 'Cash',
+                    note,
+                    date: new Date().toISOString()
+                })).unwrap();
+            } catch (err) {}
 
             setQuickText('');
         } finally {
@@ -93,13 +96,15 @@ const QuickAdd = () => {
         if (isSubmitting) return;
         setIsSubmitting(true);
         try {
-            await addExpense({
-                amount,
-                category,
-                paymentMethod: 'Cash',
-                note,
-                date: new Date().toISOString()
-            });
+            try {
+                await dispatch(addExpense({
+                    amount,
+                    category,
+                    paymentMethod: 'Cash',
+                    note,
+                    date: new Date().toISOString()
+                })).unwrap();
+            } catch (err) {}
         } finally {
             setIsSubmitting(false);
         }

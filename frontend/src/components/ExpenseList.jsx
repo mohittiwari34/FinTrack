@@ -1,10 +1,12 @@
-import { useContext, useState, useEffect } from 'react';
-import { AppContext } from '../context/AppContext';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchExpenses, fetchIncomes, deleteExpense, updateExpense } from '../store/slices/appSlice';
 import { Trash2, Edit2, Search, FilterX, SlidersHorizontal } from 'lucide-react';
 import Modal from './Modal';
 
 const ExpenseList = () => {
-    const { expenses, incomes, fetchExpenses, fetchIncomes, deleteExpense, updateExpense } = useContext(AppContext);
+    const dispatch = useDispatch();
+    const { expenses, incomes } = useSelector(state => state.app);
     
     // Core State
     const [activeTab, setActiveTab] = useState('expenses'); // 'expenses' or 'incomes'
@@ -24,9 +26,9 @@ const ExpenseList = () => {
     const [editingExpense, setEditingExpense] = useState(null);
 
     useEffect(() => {
-        fetchExpenses();
-        fetchIncomes();
-    }, [fetchExpenses, fetchIncomes]);
+        dispatch(fetchExpenses());
+        dispatch(fetchIncomes());
+    }, [dispatch]);
 
     const handleEditClick = (expense) => {
         setEditingExpense(expense);
@@ -35,17 +37,17 @@ const ExpenseList = () => {
 
     const handleUpdateExpense = async (e) => {
         e.preventDefault();
-        const success = await updateExpense(editingExpense._id, editingExpense);
-        if (success) {
+        try {
+            await dispatch(updateExpense({ id: editingExpense._id, expenseData: editingExpense })).unwrap();
             setIsEditModalOpen(false);
             setEditingExpense(null);
-        }
+        } catch (err) {}
     };
 
     const handleDelete = async (id, type) => {
         if (window.confirm('Are you sure you want to delete this record?')) {
             if (type === 'expense') {
-                await deleteExpense(id);
+                try { await dispatch(deleteExpense(id)).unwrap(); } catch (err) {}
             }
             // Add deleteIncome here when ready
         }
@@ -213,7 +215,22 @@ const ExpenseList = () => {
                                         {item.category || item.source}
                                     </span>
                                 </td>
-                                <td className="text-muted">{item.note || '-'}</td>
+                                <td>
+                                    <div className="text-muted">{item.note || '-'}</div>
+                                    {item.receiptUrl && (
+                                        <div style={{ marginTop: '0.25rem' }}>
+                                            <a 
+                                                href={`http://localhost:5000${item.receiptUrl}`} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer" 
+                                                className="badge" 
+                                                style={{ fontSize: '0.7rem', background: 'var(--primary)', color: 'white', display: 'inline-block', padding: '0.2rem 0.5rem', opacity: 0.9 }}
+                                            >
+                                                View Receipt
+                                            </a>
+                                        </div>
+                                    )}
+                                </td>
                                 <td>{item.paymentMethod || '-'}</td>
                                 <td style={{ textAlign: 'right', fontWeight: 600, color: activeTab === 'incomes' ? '#34d399' : '#fca5a5' }}>
                                     ₹{item.amount.toFixed(2)}
