@@ -11,6 +11,7 @@ import Signup from './pages/Signup';
 import Transactions from './pages/Transactions';
 import Budgets from './pages/Budgets';
 import Analytics from './pages/Analytics';
+import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 
 const PrivateRoute = ({ children }) => {
@@ -56,6 +57,10 @@ const AppRoutes = () => {
                         <Route
                             path="/analytics"
                             element={<PrivateRoute><Analytics /></PrivateRoute>}
+                        />
+                        <Route
+                            path="/profile"
+                            element={<PrivateRoute><Profile /></PrivateRoute>}
                         />
                     </Routes>
                 </main>

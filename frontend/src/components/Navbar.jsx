@@ -40,10 +40,10 @@ const Navbar = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 badge">
+                    <Link to="/profile" className="flex items-center gap-2 badge hover:bg-[var(--border)] transition-all cursor-pointer no-underline" style={{ color: 'inherit' }}>
                         <User size={14} />
                         <span>{user.name}</span>
-                    </div>
+                    </Link>
 
                     <button
                         onClick={() => dispatch(logout())}

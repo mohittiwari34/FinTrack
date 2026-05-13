@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchDashboardData } from '../store/slices/appSlice';
-import { ArrowUpRight, ArrowDownRight, Wallet, TrendingUp, Calendar, PiggyBank, Activity } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, TrendingUp, Calendar, PiggyBank, Activity, Filter, RefreshCw } from 'lucide-react';
 import SummaryCard from '../components/SummaryCard';
 import { NetFlowChart } from '../components/DashboardCharts';
 
@@ -10,9 +10,17 @@ const Dashboard = () => {
     const { dashboardData, loading } = useSelector(state => state.app);
     const { user } = useSelector(state => state.auth);
 
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+
     useEffect(() => {
-        dispatch(fetchDashboardData());
-    }, [dispatch]);
+        dispatch(fetchDashboardData({ startDate, endDate }));
+    }, [dispatch, startDate, endDate]);
+
+    const resetFilters = () => {
+        setStartDate('');
+        setEndDate('');
+    };
 
     if (loading || !dashboardData) {
         return (
@@ -40,6 +48,38 @@ const Dashboard = () => {
                 <div>
                     <h1 style={{ fontSize: '1.875rem', marginBottom: '0.25rem' }}>Dashboard Overview</h1>
                     <p className="text-muted">Welcome back, {user?.name}</p>
+                </div>
+                
+                <div className="flex gap-4 items-center flex-wrap">
+                    <div className="flex gap-2 items-center bg-[var(--background)] p-1 rounded-md border border-[var(--border)]">
+                        <div className="flex items-center gap-2 px-2">
+                            <Calendar size={16} className="text-muted" />
+                            <input 
+                                type="date" 
+                                className="bg-transparent text-sm outline-none border-none text-[var(--text)]"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
+                        </div>
+                        <span className="text-muted text-sm">to</span>
+                        <div className="flex items-center gap-2 px-2">
+                            <input 
+                                type="date" 
+                                className="bg-transparent text-sm outline-none border-none text-[var(--text)]"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                            />
+                        </div>
+                        {(startDate || endDate) && (
+                            <button 
+                                onClick={resetFilters}
+                                className="btn btn-ghost p-1 hover:text-white"
+                                title="Reset filters"
+                            >
+                                <RefreshCw size={14} />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

@@ -8,16 +8,29 @@ const Budget = require('../models/Budget');
 exports.getDashboardData = async (req, res) => {
     try {
         const userId = req.user.id;
+        const { startDate, endDate } = req.query;
 
-        // Fetch all incomes and expenses for the user
-        const incomes = await Income.find({ userId });
-        const expenses = await Expense.find({ userId });
+        // Build date filter
+        let dateFilter = {};
+        if (startDate || endDate) {
+            dateFilter.date = {};
+            if (startDate) dateFilter.date.$gte = new Date(startDate);
+            if (endDate) dateFilter.date.$lte = new Date(endDate + 'T23:59:59');
+        }
+
+        // Fetch incomes and expenses based on filters
+        const incomes = await Income.find({ userId, ...dateFilter });
+        const expenses = await Expense.find({ userId, ...dateFilter });
         const budget = await Budget.findOne({ userId });
 
-        // Calculate totals
+        // Calculate totals (for the filtered range)
         const totalIncome = incomes.reduce((acc, curr) => acc + curr.amount, 0);
         const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-        const currentBalance = totalIncome - totalExpenses;
+        
+        // Fetch overall balance
+        const allIncomes = await Income.find({ userId });
+        const allExpenses = await Expense.find({ userId });
+        const currentBalance = allIncomes.reduce((acc, curr) => acc + curr.amount, 0) - allExpenses.reduce((acc, curr) => acc + curr.amount, 0);
 
         // Get recent transactions (combine and sort)
         const recentTransactions = [...incomes, ...expenses]

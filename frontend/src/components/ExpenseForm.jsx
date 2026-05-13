@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addExpense, clearAppError } from '../store/slices/appSlice';
+import { addExpense, clearAppError, scanReceipt } from '../store/slices/appSlice';
 
 const CATEGORIES = ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Education', 'Health', 'Drinks', 'Other'];
 const PAYMENT_METHODS = ['Cash', 'Card', 'UPI'];
@@ -9,7 +9,8 @@ const ExpenseForm = ({ onClose }) => {
     const dispatch = useDispatch();
     const { error } = useSelector(state => state.app);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [receipt, setReceipt] = useState(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const [receiptUrl, setReceiptUrl] = useState(null);
 
     const [formData, setFormData] = useState({
         amount: '',
@@ -26,6 +27,27 @@ const ExpenseForm = ({ onClose }) => {
         setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
     };
 
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        setIsScanning(true);
+        try {
+            const result = await dispatch(scanReceipt(file)).unwrap();
+            setReceiptUrl(result.receiptUrl);
+            
+            setFormData(prev => ({
+                ...prev,
+                amount: result.amount || prev.amount,
+                date: result.date || prev.date
+            }));
+        } catch (err) {
+            alert(err || 'Failed to scan receipt');
+        } finally {
+            setIsScanning(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -35,23 +57,12 @@ const ExpenseForm = ({ onClose }) => {
             amount: Number(formData.amount)
         };
 
-        let payload;
-        if (receipt) {
-            payload = new FormData();
-            for (const key in submitData) {
-                if (key === 'isRecurring') {
-                    if (submitData[key]) payload.append(key, "true");
-                } else if (submitData[key] !== null && submitData[key] !== undefined) {
-                    payload.append(key, submitData[key]);
-                }
-            }
-            payload.append('receipt', receipt);
-        } else {
-            payload = submitData;
+        if (receiptUrl) {
+            submitData.receiptUrl = receiptUrl;
         }
 
         try {
-            await dispatch(addExpense(payload)).unwrap();
+            await dispatch(addExpense(submitData)).unwrap();
             onClose();
         } catch (err) {
             // Let the global state display error
@@ -166,23 +177,35 @@ const ExpenseForm = ({ onClose }) => {
             </div>
 
             <div className="form-group mb-6">
-                <label className="form-label">Attach Receipt Image (Optional)</label>
+                <label className="form-label">Attach Receipt Image to Auto-Fill</label>
                 <input
                     type="file"
                     className="form-control"
                     accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={(e) => setReceipt(e.target.files[0])}
+                    onChange={handleFileChange}
+                    disabled={isScanning}
                     style={{ padding: '0.5rem', cursor: 'pointer' }}
                 />
-                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>JPG, PNG or PDF formats supported.</p>
+                {isScanning && (
+                    <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 500 }}>
+                        <span className="loading loading-spinner loading-xs mr-2"></span>
+                        Scanning Receipt... Please wait to see auto-filled data.
+                    </p>
+                )}
+                {receiptUrl && !isScanning && (
+                    <p style={{ color: '#10b981', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 500 }}>
+                        ✓ Receipt uploaded and scanned successfully! Edit details if needed.
+                    </p>
+                )}
+                {!isScanning && !receiptUrl && <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>JPG, PNG or PDF formats supported.</p>}
             </div>
 
             <div className="flex justify-between gap-4">
-                <button type="button" className="btn btn-ghost w-full" onClick={onClose} disabled={isSubmitting}>
+                <button type="button" className="btn btn-ghost w-full" onClick={onClose} disabled={isSubmitting || isScanning}>
                     Cancel
                 </button>
-                <button type="submit" className="btn btn-primary w-full justify-center" disabled={isSubmitting}>
-                    {isSubmitting ? <span className="loader" style={{ width: 16, height: 16, borderTopColor: 'white' }}></span> : 'Save Expense'}
+                <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting || isScanning}>
+                    {isSubmitting ? 'Saving...' : 'Save Expense'}
                 </button>
             </div>
         </form>

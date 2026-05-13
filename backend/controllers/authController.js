@@ -70,6 +70,52 @@ exports.getMe = async (req, res) => {
     }
 };
 
+// @desc    Update user details
+// @route   PUT /api/auth/updatedetails
+// @access  Private
+exports.updateDetails = async (req, res) => {
+    try {
+        const fieldsToUpdate = {
+            name: req.body.name,
+            email: req.body.email
+        };
+
+        const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+            new: true,
+            runValidators: true
+        });
+
+        res.status(200).json({ success: true, data: user });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// @desc    Update password
+// @route   PUT /api/auth/updatepassword
+// @access  Private
+exports.updatePassword = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('+password');
+
+        // Check current password
+        const isMatch = await bcrypt.compare(req.body.currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, error: 'Current password is incorrect' });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(req.body.newPassword, salt);
+
+        await user.save();
+
+        sendTokenResponse(user, 200, res);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 const sendTokenResponse = (user, statusCode, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE,

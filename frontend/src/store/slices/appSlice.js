@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-export const fetchDashboardData = createAsyncThunk('app/fetchDashboardData', async (_, { rejectWithValue }) => {
+export const fetchDashboardData = createAsyncThunk('app/fetchDashboardData', async (params, { rejectWithValue }) => {
     try {
-        const res = await api.get('/analytics/dashboard');
+        const res = await api.get('/analytics/dashboard', { params });
         return res.data.data;
     } catch (err) {
         return rejectWithValue(err.response?.data?.error || 'Failed to fetch dashboard data');
@@ -58,6 +58,16 @@ export const updateExpense = createAsyncThunk('app/updateExpense', async ({ id, 
     }
 });
 
+export const updateIncome = createAsyncThunk('app/updateIncome', async ({ id, incomeData }, { rejectWithValue, dispatch }) => {
+    try {
+        const res = await api.put(`/incomes/${id}`, incomeData);
+        dispatch(fetchDashboardData());
+        return res.data.data;
+    } catch (err) {
+        return rejectWithValue(err.response?.data?.error || 'Failed to update income');
+    }
+});
+
 export const addIncome = createAsyncThunk('app/addIncome', async (incomeData, { rejectWithValue, dispatch }) => {
     try {
         const res = await api.post('/incomes', incomeData);
@@ -65,6 +75,27 @@ export const addIncome = createAsyncThunk('app/addIncome', async (incomeData, { 
         return res.data.data;
     } catch (err) {
         return rejectWithValue(err.response?.data?.error || 'Failed to add income');
+    }
+});
+
+export const deleteIncome = createAsyncThunk('app/deleteIncome', async (id, { rejectWithValue, dispatch }) => {
+    try {
+        await api.delete(`/incomes/${id}`);
+        dispatch(fetchDashboardData());
+        return id;
+    } catch (err) {
+        return rejectWithValue(err.response?.data?.error || 'Failed to delete income');
+    }
+});
+
+export const scanReceipt = createAsyncThunk('app/scanReceipt', async (file, { rejectWithValue }) => {
+    try {
+        const formData = new FormData();
+        formData.append('receipt', file);
+        const res = await api.post('/expenses/upload-receipt', formData);
+        return res.data.data; // { receiptUrl, amount, date, extractedText }
+    } catch (err) {
+        return rejectWithValue(err.response?.data?.error || 'Failed to scan receipt');
     }
 });
 
@@ -132,6 +163,14 @@ const appSlice = createSlice({
             })
             .addCase(addIncome.rejected, (state, action) => {
                 state.error = action.payload;
+            })
+            // Update Income
+            .addCase(updateIncome.fulfilled, (state, action) => {
+                state.incomes = state.incomes.map(inc => inc._id === action.payload._id ? action.payload : inc);
+            })
+            // Delete Income
+            .addCase(deleteIncome.fulfilled, (state, action) => {
+                state.incomes = state.incomes.filter(inc => inc._id !== action.payload);
             });
     }
 });

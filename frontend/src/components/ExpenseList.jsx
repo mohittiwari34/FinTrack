@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchExpenses, fetchIncomes, deleteExpense, updateExpense } from '../store/slices/appSlice';
+import { fetchExpenses, fetchIncomes, deleteExpense, updateExpense, deleteIncome, updateIncome } from '../store/slices/appSlice';
 import { Trash2, Edit2, Search, FilterX, SlidersHorizontal } from 'lucide-react';
 import Modal from './Modal';
 
@@ -38,18 +38,25 @@ const ExpenseList = () => {
     const handleUpdateExpense = async (e) => {
         e.preventDefault();
         try {
-            await dispatch(updateExpense({ id: editingExpense._id, expenseData: editingExpense })).unwrap();
+            if (activeTab === 'expenses') {
+                await dispatch(updateExpense({ id: editingExpense._id, expenseData: editingExpense })).unwrap();
+            } else {
+                await dispatch(updateIncome({ id: editingExpense._id, incomeData: editingExpense })).unwrap();
+            }
             setIsEditModalOpen(false);
             setEditingExpense(null);
         } catch (err) {}
     };
 
     const handleDelete = async (id, type) => {
-        if (window.confirm('Are you sure you want to delete this record?')) {
-            if (type === 'expense') {
-                try { await dispatch(deleteExpense(id)).unwrap(); } catch (err) {}
-            }
-            // Add deleteIncome here when ready
+        if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
+            try {
+                if (type === 'expense') {
+                    await dispatch(deleteExpense(id)).unwrap();
+                } else {
+                    await dispatch(deleteIncome(id)).unwrap();
+                }
+            } catch (err) {}
         }
     };
 
@@ -220,7 +227,7 @@ const ExpenseList = () => {
                                     {item.receiptUrl && (
                                         <div style={{ marginTop: '0.25rem' }}>
                                             <a 
-                                                href={`http://localhost:5000${item.receiptUrl}`} 
+                                                href={(import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000') + item.receiptUrl} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer" 
                                                 className="badge" 
@@ -237,11 +244,9 @@ const ExpenseList = () => {
                                 </td>
                                 <td style={{ textAlign: 'center' }}>
                                     <div className="flex justify-center gap-2">
-                                        {activeTab === 'expenses' && (
-                                            <button onClick={() => handleEditClick(item)} className="btn-ghost" style={{ padding: '0.25rem', color: 'var(--primary)' }}>
-                                                <Edit2 size={16} />
-                                            </button>
-                                        )}
+                                        <button onClick={() => handleEditClick(item)} className="btn-ghost" style={{ padding: '0.25rem', color: 'var(--primary)' }}>
+                                            <Edit2 size={16} />
+                                        </button>
                                         <button onClick={() => handleDelete(item._id, activeTab === 'expenses' ? 'expense' : 'income')} className="btn-ghost" style={{ padding: '0.25rem', color: 'var(--danger)' }}>
                                             <Trash2 size={16} />
                                         </button>
@@ -261,7 +266,7 @@ const ExpenseList = () => {
             </div>
 
             {/* Edit Modal */}
-            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Expense">
+            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title={activeTab === 'expenses' ? "Edit Expense" : "Edit Income"}>
                 {editingExpense && (
                     <form onSubmit={handleUpdateExpense}>
                         <div className="form-group">
@@ -276,14 +281,24 @@ const ExpenseList = () => {
                         </div>
                         <div className="flex gap-4">
                             <div className="form-group w-full">
-                                <label className="form-label">Category</label>
-                                <select
-                                    className="form-control"
-                                    value={editingExpense.category}
-                                    onChange={(e) => setEditingExpense({ ...editingExpense, category: e.target.value })}
-                                >
-                                    {['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Education', 'Health', 'Drinks', 'Other'].map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
+                                <label className="form-label">{activeTab === 'expenses' ? 'Category' : 'Source'}</label>
+                                {activeTab === 'expenses' ? (
+                                    <select
+                                        className="form-control"
+                                        value={editingExpense.category}
+                                        onChange={(e) => setEditingExpense({ ...editingExpense, category: e.target.value })}
+                                    >
+                                        {['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Education', 'Health', 'Drinks', 'Other'].map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        value={editingExpense.source || ''}
+                                        onChange={(e) => setEditingExpense({ ...editingExpense, source: e.target.value })}
+                                        required
+                                    />
+                                )}
                             </div>
                             <div className="form-group w-full">
                                 <label className="form-label">Method</label>

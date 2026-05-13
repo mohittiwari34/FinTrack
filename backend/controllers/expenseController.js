@@ -1,4 +1,5 @@
 const Expense = require('../models/Expense');
+const Tesseract = require('tesseract.js');
 
 // @desc    Get all expenses
 // @route   GET /api/expenses
@@ -90,6 +91,57 @@ exports.updateExpense = async (req, res) => {
         });
 
         res.status(200).json({ success: true, data: expense });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// @desc    Upload receipt and OCR
+// @route   POST /api/expenses/upload-receipt
+// @access  Private
+exports.uploadAndOCR = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No image uploaded' });
+        }
+
+        const receiptUrl = `/uploads/${req.file.filename}`;
+        
+        // Run OCR
+        const { data: { text } } = await Tesseract.recognize(req.file.path, 'eng');
+        
+        let amount = '';
+        const amountRegex = /(\d{1,5}\.\d{2})/g;
+        const matches = text.match(amountRegex);
+        if (matches && matches.length > 0) {
+            const amounts = matches.map(m => parseFloat(m));
+            amount = Math.max(...amounts).toFixed(2);
+        }
+
+        let date = '';
+        const dateRegex = /(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{2,4})/;
+        const dateMatch = text.match(dateRegex);
+        if (dateMatch) {
+            let day = dateMatch[1];
+            let month = dateMatch[2];
+            let year = dateMatch[3];
+            if (year.length === 2) year = `20${year}`;
+            if (parseInt(month) > 12) {
+                const temp = day;
+                day = month;
+                month = temp;
+            }
+            date = `${year}-${month}-${day}`;
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            data: { 
+                receiptUrl, 
+                amount,
+                date 
+            }
+        });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
